@@ -33,6 +33,34 @@ func NewConfig() *Config {
 	}
 }
 
+
+func (c *Config) CatchPokemon(pokemonName string) (cache.Pokemon, error) {
+    url := c.BaseURL + "/pokemon/" + pokemonName
+    
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return cache.Pokemon{}, err
+    }
+
+    resp, err := c.Client.Do(req)
+    if err != nil {
+        return cache.Pokemon{}, err
+    }
+    defer resp.Body.Close()
+
+    pokemon := cache.Pokemon{}
+    dat, err := io.ReadAll(resp.Body)
+    if err != nil {
+        return cache.Pokemon{}, err
+    }
+    
+    if err = json.Unmarshal(dat, &pokemon); err != nil {
+        return cache.Pokemon{}, err
+    }
+    
+    return pokemon, nil
+}
+
 func (c *Config) ListPokemons(pageURL *string, areaName string) (Location, error) {
 	url := c.BaseURL + "/location-area/" + areaName
 

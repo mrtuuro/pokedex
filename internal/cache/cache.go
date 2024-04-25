@@ -8,6 +8,7 @@ import (
 type Cache struct {
 	mu       *sync.Mutex
 	CacheMap map[string]CacheEntry
+	Pokedex  map[string]Pokemon
 }
 
 type CacheEntry struct {
@@ -15,14 +16,49 @@ type CacheEntry struct {
 	Val       []byte
 }
 
+type Pokemon struct {
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	BaseExp int    `json:"base_experience"`
+	Height  int    `json:"height"`
+	Weight  int    `json:"weight"`
+	Stats   []struct {
+		BaseStat int `json:"base_stat"`
+		Stat     struct {
+			StatName string `json:"name"`
+		} `json:"stat"`
+    } `json:"stats"`
+	Types []struct {
+		Type struct {
+            TypeName string `json:"name"`
+		} `json:"type"`
+	} `json:"types"`
+}
+
 func NewCache(interval time.Duration) *Cache {
 
 	c := &Cache{
 		CacheMap: make(map[string]CacheEntry),
+		Pokedex:  make(map[string]Pokemon),
 		mu:       &sync.Mutex{},
 	}
 
 	return c
+}
+
+func (c *Cache) AddPokemon(key string, value Pokemon) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.Pokedex[key] = value
+}
+
+func (c *Cache) GetPokemon(key string) (Pokemon, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	val, ok := c.Pokedex[key]
+	return val, ok
 }
 
 func (c *Cache) Add(key string, value []byte) {
