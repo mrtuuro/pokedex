@@ -33,6 +33,42 @@ func NewConfig() *Config {
 	}
 }
 
+func (c *Config) ListPokemons(pageURL *string, areaName string) (Location, error) {
+	url := c.BaseURL + "/location-area/" + areaName
+
+    if val, ok := c.Cache.Get(url); ok {
+        locationResp := Location{}
+        if err := json.Unmarshal(val, &locationResp); err != nil {
+            return Location{}, err
+        }
+        return locationResp, nil
+    }
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return Location{}, err
+	}
+
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return Location{}, err
+	}
+	defer resp.Body.Close()
+
+	dat, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return Location{}, err
+	}
+
+	pokemonResp := Location{}
+	if err := json.Unmarshal(dat, &pokemonResp); err != nil {
+		return Location{}, err
+	}
+
+    c.Cache.Add(url, dat)
+	return pokemonResp, nil
+}
+
 func (c *Config) ListLocations(pageURL *string) (RespLocation, error) {
 	url := c.BaseURL + "/location-area"
 	if pageURL != nil {
@@ -44,7 +80,7 @@ func (c *Config) ListLocations(pageURL *string) (RespLocation, error) {
 		if err := json.Unmarshal(val, &locationsResp); err != nil {
 			return RespLocation{}, err
 		}
-        fmt.Println("this is from cache")
+		fmt.Println("this is from cache")
 		return locationsResp, nil
 	}
 
@@ -69,7 +105,7 @@ func (c *Config) ListLocations(pageURL *string) (RespLocation, error) {
 		return RespLocation{}, err
 	}
 
-    fmt.Println("this is from request")
+	fmt.Println("this is from request")
 	c.Cache.Add(url, dat)
 	return locationsResp, nil
 

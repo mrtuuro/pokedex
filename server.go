@@ -43,7 +43,7 @@ func (s *Server) Start() {
 			continue
 		}
 
-        err := command.ExecuteFunc(s.Config)
+        err := command.ExecuteFunc(s.Config, fields)
         if err != nil {
             log.Fatal(err)
         }
