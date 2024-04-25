@@ -32,6 +32,7 @@ func getCommandMap() map[string]Command {
 	commandMap["explore"] = NewCommand("explore", "Displays all of the Pokemons in a given area.", commandExplore)
 	commandMap["catch"] = NewCommand("catch", "Catch pokemon to add it to your Pokedex", commandCatch)
 	commandMap["inspect"] = NewCommand("inspect", "Displays the caught pokemon details", commandInspect)
+	commandMap["pokedex"] = NewCommand("pokedex", "Displays all the pokemons that user has caught.", commandPokedex)
 
 	return commandMap
 }
@@ -120,21 +121,33 @@ func commandInspect(cfg *Config, fields []string) error {
 
 	pokemonName := fields[1]
 	pokemon, ok := cfg.Cache.GetPokemon(pokemonName)
-    if !ok {
+	if !ok {
 		fmt.Println("you have not caught that pokemon!")
-        return nil
+		return nil
 	}
-    fmt.Println("Name:", pokemon.Name)
-    fmt.Println("Height:", pokemon.Height)
-    fmt.Println("Weight:", pokemon.Weight)
-    fmt.Println("Stats:")
-    for _, stat := range pokemon.Stats {
-        fmt.Printf(" -%v: %v\n", stat.Stat.StatName, stat.BaseStat)
-    }
-    fmt.Println("Types:")
-    for _, val := range pokemon.Types {
-        fmt.Printf(" - %v\n", val.Type.TypeName)
-    }
+	fmt.Println("Name:", pokemon.Name)
+	fmt.Println("Height:", pokemon.Height)
+	fmt.Println("Weight:", pokemon.Weight)
+	fmt.Println("Stats:")
+	for _, stat := range pokemon.Stats {
+		fmt.Printf(" -%v: %v\n", stat.Stat.StatName, stat.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, val := range pokemon.Types {
+		fmt.Printf(" - %v\n", val.Type.TypeName)
+	}
 
 	return nil
+}
+
+func commandPokedex(cfg *Config, fields []string) error {
+
+	pokemons := cfg.Cache.Pokedex
+	fmt.Println("Your Pokedex:")
+	for k := range pokemons {
+		fmt.Printf(" - %v\n", k)
+	}
+
+	return nil
+
 }
